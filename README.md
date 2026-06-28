@@ -2,6 +2,8 @@
 
 # 📝 md2wechat
 
+![md2wechat - 从 Markdown 到微信公众号草稿箱，一键发布](./cover/cover.jpeg)
+
 ### 从 Markdown 到微信公众号草稿箱，一行命令 / 一次点击
 
 **免费 · 开源 · 本地运行 · 批量发布**
