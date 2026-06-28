@@ -19,8 +19,16 @@
     "公众号",
     "html"
   ],
-  "author": "",
+  "author": "无敌宝宝sp <1307854753@qq.com> (https://github.com/jiabao-wang)",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jiabao-wang/md2weichat.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jiabao-wang/md2weichat/issues"
+  },
+  "homepage": "https://github.com/jiabao-wang/md2weichat#readme",
   "type": "commonjs",
   "dependencies": {
     "@types/cors": "^2.8.19",

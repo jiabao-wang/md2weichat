@@ -41,7 +41,7 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/your-username/md2wechat.git
+git clone https://github.com/jiabao-wang/md2weichat.git
 cd md2wechat
 
 # 安装依赖
