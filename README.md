@@ -2,18 +2,27 @@
 
 # 📝 md2wechat
 
-**Markdown → 微信公众号，一键排版发布**
+### 从 Markdown 到微信公众号草稿箱，一行命令 / 一次点击
+
+**免费 · 开源 · 本地运行 · 批量发布**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-16+-43853D?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![微信公众号](https://img.shields.io/badge/平台-微信公众号-07c160?logo=wechat&logoColor=white)](https://mp.weixin.qq.com/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/jiabao-wang/md2weichat/pulls)
 
-**告别复制粘贴的排版痛苦，让 Markdown 优雅地出现在公众号上**
+**不用再为公众号排版掉头发了 —— 本地写完 Markdown，一键发送到草稿箱，拿起手机群发即可。**
 
-[功能特性](#-功能特性) · [快速开始](#-快速开始) · [使用方式](#-使用方式) · [主题预览](#-主题预览) · [常见问题](#-常见问题)
+[✨ 功能特性](#-功能特性) · [🚀 快速开始](#-快速开始) · [📖 使用方式](#-使用方式) · [🎨 主题预览](#-主题预览) · [📦 批量发布](#方式一可视化-web-界面推荐新手) · [❓ FAQ](#-常见问题)
 
 </div>
+
+---
+
+<p align="center">
+<b>⚡ 实时预览</b> · <b>🎨 11 套主题</b> · <b>💻 代码高亮 + 手机端完美换行</b> · <b>🖼️ 图片自动上传</b> · <b>📦 批量发布</b> · <b>🔧 CLI + Web 双模式</b>
+</p>
 
 ---
 
