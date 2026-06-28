@@ -1,0 +1,87 @@
+<h1 style="font-size: 24px; font-weight: bold; margin: 30px 0 20px; padding-bottom: 10px; border-bottom: 2px solid #07c160;">如何使用 md2wechat 发布公众号文章</h1>
+<p style="margin: 16px 0; text-align: justify;">欢迎使用 <strong style="font-weight: bold; color: #07c160;">md2wechat</strong>！这是一个可以将 Markdown 文档快速转换为微信公众号 HTML 格式的命令行工具。</p>
+<h2 style="font-size: 20px; font-weight: bold; margin: 25px 0 15px; padding-left: 10px; border-left: 4px solid #07c160;">功能特性</h2>
+<ul style="margin: 16px 0; padding-left: 30px;">
+<li style="margin: 8px 0;">✅ Markdown 语法全支持</li>
+<li style="margin: 8px 0;">✅ 代码语法高亮</li>
+<li style="margin: 8px 0;">✅ 多种精美主题</li>
+<li style="margin: 8px 0;">✅ 图片自动上传</li>
+<li style="margin: 8px 0;">✅ 一键发布草稿箱</li>
+</ul>
+<h2 style="font-size: 20px; font-weight: bold; margin: 25px 0 15px; padding-left: 10px; border-left: 4px solid #07c160;">快速开始</h2>
+<h3 style="font-size: 18px; font-weight: bold; margin: 20px 0 12px;">1. 初始化配置</h3>
+<p style="margin: 16px 0; text-align: justify;">首先，你需要初始化配置文件：</p>
+<pre style="margin: 20px 0; padding: 20px; background: #282c34; border-radius: 8px; overflow-x: auto;"><code class="language-bash" style="font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; color: #abb2bf; line-height: 1.6;">md2wechat init
+</code></pre>
+<p style="margin: 16px 0; text-align: justify;">然后编辑配置文件，填入你的微信公众号 AppID 和 AppSecret。</p>
+<h3 style="font-size: 18px; font-weight: bold; margin: 20px 0 12px;">2. 预览文章</h3>
+<p style="margin: 16px 0; text-align: justify;">使用 preview 命令在浏览器中预览效果：</p>
+<pre style="margin: 20px 0; padding: 20px; background: #282c34; border-radius: 8px; overflow-x: auto;"><code class="language-bash" style="font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; color: #abb2bf; line-height: 1.6;">md2wechat convert article.md --preview
+</code></pre>
+<h3 style="font-size: 18px; font-weight: bold; margin: 20px 0 12px;">3. 发布草稿</h3>
+<p style="margin: 16px 0; text-align: justify;">确认无误后，使用 <code style="font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; background: #f0f0f0; padding: 2px 6px; border-radius: 3px; color: #e96900;">--draft</code> 参数直接发布到草稿箱：</p>
+<pre style="margin: 20px 0; padding: 20px; background: #282c34; border-radius: 8px; overflow-x: auto;"><code class="language-bash" style="font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; color: #abb2bf; line-height: 1.6;">md2wechat convert article.md --draft --cover cover.jpg
+</code></pre>
+<h2 style="font-size: 20px; font-weight: bold; margin: 25px 0 15px; padding-left: 10px; border-left: 4px solid #07c160;">代码示例</h2>
+<p style="margin: 16px 0; text-align: justify;">下面是一个 JavaScript 代码示例：</p>
+<pre style="margin: 20px 0; padding: 20px; background: #282c34; border-radius: 8px; overflow-x: auto;"><code class="language-javascript" style="font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; color: #abb2bf; line-height: 1.6;">function hello(name) {
+  console.log(`Hello, ${name}!`);
+  return {
+    message: 'Welcome to md2wechat',
+    time: new Date()
+  };
+}
+
+hello('WeChat');
+</code></pre>
+<h2 style="font-size: 20px; font-weight: bold; margin: 25px 0 15px; padding-left: 10px; border-left: 4px solid #07c160;">引用块</h2>
+<blockquote style="margin: 20px 0; padding: 15px 20px; background: #f7f7f7; border-left: 4px solid #07c160; color: #666;">
+<p style="margin: 16px 0; text-align: justify;">写作是最好的思考方式。</p>
+<p style="margin: 16px 0; text-align: justify;">—— 某个大佬</p>
+</blockquote>
+<h2 style="font-size: 20px; font-weight: bold; margin: 25px 0 15px; padding-left: 10px; border-left: 4px solid #07c160;">列表支持</h2>
+<h3 style="font-size: 18px; font-weight: bold; margin: 20px 0 12px;">无序列表</h3>
+<ul style="margin: 16px 0; padding-left: 30px;">
+<li style="margin: 8px 0;">第一项</li>
+<li style="margin: 8px 0;">第二项<ul style="margin: 16px 0; padding-left: 30px;">
+<li style="margin: 8px 0;">嵌套项</li>
+</ul>
+</li>
+<li style="margin: 8px 0;">第三项</li>
+</ul>
+<h3 style="font-size: 18px; font-weight: bold; margin: 20px 0 12px;">有序列表</h3>
+<ol style="margin: 16px 0; padding-left: 30px;">
+<li style="margin: 8px 0;">打开命令行</li>
+<li style="margin: 8px 0;">输入命令</li>
+<li style="margin: 8px 0;">查看结果</li>
+</ol>
+<h2 style="font-size: 20px; font-weight: bold; margin: 25px 0 15px; padding-left: 10px; border-left: 4px solid #07c160;">表格</h2>
+<table style="width: 100%; border-collapse: collapse; margin: 20px 0;" width="100%">
+<thead>
+<tr>
+<th style="border: 1px solid #ddd; padding: 10px 15px; text-align: left; background: #f7f7f7; font-weight: bold;" align="left">功能</th>
+<th style="border: 1px solid #ddd; padding: 10px 15px; text-align: left; background: #f7f7f7; font-weight: bold;" align="left">命令</th>
+<th style="border: 1px solid #ddd; padding: 10px 15px; text-align: left; background: #f7f7f7; font-weight: bold;" align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td style="border: 1px solid #ddd; padding: 10px 15px; text-align: left;" align="left">预览</td>
+<td style="border: 1px solid #ddd; padding: 10px 15px; text-align: left;" align="left"><code style="font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; background: #f0f0f0; padding: 2px 6px; border-radius: 3px; color: #e96900;">--preview</code></td>
+<td style="border: 1px solid #ddd; padding: 10px 15px; text-align: left;" align="left">浏览器预览</td>
+</tr>
+<tr>
+<td style="border: 1px solid #ddd; padding: 10px 15px; text-align: left;" align="left">输出</td>
+<td style="border: 1px solid #ddd; padding: 10px 15px; text-align: left;" align="left"><code style="font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; background: #f0f0f0; padding: 2px 6px; border-radius: 3px; color: #e96900;">--output</code></td>
+<td style="border: 1px solid #ddd; padding: 10px 15px; text-align: left;" align="left">保存HTML文件</td>
+</tr>
+<tr>
+<td style="border: 1px solid #ddd; padding: 10px 15px; text-align: left;" align="left">草稿</td>
+<td style="border: 1px solid #ddd; padding: 10px 15px; text-align: left;" align="left"><code style="font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; background: #f0f0f0; padding: 2px 6px; border-radius: 3px; color: #e96900;">--draft</code></td>
+<td style="border: 1px solid #ddd; padding: 10px 15px; text-align: left;" align="left">发布到草稿箱</td>
+</tr>
+</tbody></table>
+<h2 style="font-size: 20px; font-weight: bold; margin: 25px 0 15px; padding-left: 10px; border-left: 4px solid #07c160;">链接和强调</h2>
+<p style="margin: 16px 0; text-align: justify;">访问 <a href="https://mp.weixin.qq.com" style="color: #07c160; text-decoration: none;">微信公众平台</a> 查看你的草稿。</p>
+<p style="margin: 16px 0; text-align: justify;">这是 <strong style="font-weight: bold; color: #07c160;">加粗文本</strong>，这是 <em>斜体文本</em>，这是 <code style="font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; background: #f0f0f0; padding: 2px 6px; border-radius: 3px; color: #e96900;">行内代码</code>。</p>
+<hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+<p style="margin: 16px 0; text-align: justify;">感谢使用！祝你写作愉快 🎉</p>

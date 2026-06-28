@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>md2wechat - Markdown 转公众号</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <style id="theme-style"></style>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+      background: #f0f2f5;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 44px;
+    }
+    header {
+      background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+      color: white;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 100;
+    }
+    .logo { font-size: 20px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+    .logo-icon { font-size: 24px; }
+    .header-actions { display: flex; gap: 10px; }
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    button:hover { opacity: 0.9; transform: translateY(-1px); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-primary { background: white; color: #07c160; }
+    .btn-secondary { background: rgba(255,255,255,0.2); color: white; }
+    .btn-success { background: #07c160; color: white; }
+    .btn-ghost { background: #f0f0f0; color: #333; }
+    .main-container { flex: 1; display: flex; overflow: hidden; }
+    .sidebar {
+      width: 300px;
+      background: white;
+      border-right: 1px solid #e8e8e8;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .sidebar-section { padding: 16px; border-bottom: 1px solid #f0f0f0; }
+    .sidebar-section h3 {
+      font-size: 13px; color: #999; text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 12px; font-weight: 600;
+    }
+    .form-group { margin-bottom: 12px; }
+    .form-group label {
+      display: block; font-size: 13px; color: #666;
+      margin-bottom: 6px; font-weight: 500;
+    }
+    input, select, textarea {
+      width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9;
+      border-radius: 6px; font-size: 14px; transition: border-color 0.2s; font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none; border-color: #07c160; box-shadow: 0 0 0 2px rgba(7,193,96,0.1);
+    }
+    .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; }
+    .file-input-wrapper input[type=file] {
+      position: absolute; left: 0; top: 0; opacity: 0;
+      width: 100%; height: 100%; cursor: pointer;
+    }
+    .file-input-btn {
+      width: 100%; padding: 10px; border: 2px dashed #d9d9d9; border-radius: 6px;
+      text-align: center; color: #666; cursor: pointer; transition: all 0.2s; font-size: 13px;
+    }
+    .file-input-btn:hover { border-color: #07c160; color: #07c160; background: #f6ffed; }
+    .file-input-btn.has-file { border-style: solid; border-color: #07c160; background: #f6ffed; color: #07c160; }
+    .cover-preview {
+      margin-top: 8px; width: 100%; height: 120px; object-fit: cover;
+      border-radius: 6px; border: 1px solid #e8e8e8; display: none;
+    }
+    .cover-preview.show { display: block; }
+    .editor-preview { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .tabs { display: flex; background: white; border-bottom: 1px solid #e8e8e8; padding: 0 16px; }
+    .tab {
+      padding: 12px 20px; cursor: pointer; font-size: 14px; color: #666;
+      border-bottom: 2px solid transparent; font-weight: 500; transition: all 0.2s;
+    }
+    .tab.active { color: #07c160; border-bottom-color: #07c160; }
+    .tab:hover { color: #07c160; }
+    .tab-content { flex: 1; overflow: hidden; display: none; }
+    .tab-content.active { display: flex; }
+    #editor-pane, #split-pane > div:first-child { flex: 1; }
+    #editor, #editor2 {
+      width: 100%; height: 100%; padding: 20px; border: none; resize: none;
+      font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 14px; line-height: 1.7; outline: none; background: #fafafa;
+    }
+    #preview-pane { flex: 1; overflow-y: auto; background: white; }
+    .preview-container { max-width: 677px; margin: 0 auto; padding: 30px; }
+    #split-pane { flex: 1; }
+    #split-pane > div:last-child { flex: 1; overflow-y: auto; background: white; }
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5); display: none; align-items: center;
+      justify-content: center; z-index: 1000;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: white; border-radius: 12px; width: 450px; max-width: 90vw;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: modalIn 0.2s ease;
+    }
+    @keyframes modalIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .modal-header {
+      padding: 20px; border-bottom: 1px solid #f0f0f0; font-size: 16px;
+      font-weight: 600; display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-close { cursor: pointer; font-size: 20px; color: #999; background: none; padding: 0; }
+    .modal-body { padding: 20px; }
+    .modal-footer {
+      padding: 16px 20px; border-top: 1px solid #f0f0f0;
+      display: flex; justify-content: flex-end; gap: 10px;
+    }
+    .toast {
+      position: fixed; bottom: 20px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #333; color: white; padding: 12px 24px; border-radius: 8px;
+      font-size: 14px; z-index: 2000; transition: transform 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { background: #07c160; }
+    .toast.error { background: #ff4d4f; }
+    .loading-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.8); display: none; align-items: center;
+      justify-content: center; z-index: 1500; flex-direction: column; gap: 16px;
+    }
+    .loading-overlay.show { display: flex; }
+    .spinner {
+      width: 40px; height: 40px; border: 3px solid #f0f0f0;
+      border-top-color: #07c160; border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: #666; font-size: 14px; }
+    .wechat-article { font-size: 16px; line-height: 1.8; color: #333; word-wrap: break-word; }
+    .theme-tag {
+      display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px;
+      background: #e6f7ff; color: #1890ff; margin-left: 8px;
+    }
+    #batch-pane { flex-direction: column; overflow-y: auto; padding: 20px; background: #fafafa; }
+    .batch-toolbar {
+      background: white; border-radius: 8px; padding: 16px; margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .batch-toolbar-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+    .batch-toolbar-row:last-child { margin-bottom: 0; }
+    .batch-default-cover {
+      display: flex; align-items: center; gap: 10px; padding: 10px; background: #f6ffed;
+      border-radius: 6px; border: 1px solid #b7eb8f;
+    }
+    .batch-default-cover img {
+      width: 80px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #d9d9d9;
+    }
+    .batch-default-cover span { font-size: 13px; color: #52c41a; font-weight: 500; }
+    .batch-global-settings { display: flex; gap: 12px; flex: 1; flex-wrap: wrap; }
+    .batch-global-settings .form-group { flex: 1; min-width: 150px; margin-bottom: 0; }
+    .batch-file-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+    .batch-file-card {
+      background: white; border-radius: 8px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .batch-file-cover {
+      width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid #e8e8e8;
+      flex-shrink: 0; cursor: pointer;
+    }
+    .batch-file-info { flex: 1; min-width: 0; }
+    .batch-file-name { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 8px; word-break: break-all; }
+    .batch-file-fields { display: flex; gap: 8px; flex-wrap: wrap; }
+    .batch-file-fields .form-group { margin-bottom: 0; flex: 1; min-width: 100px; }
+    .batch-file-fields .form-group label { font-size: 12px; margin-bottom: 4px; }
+    .batch-file-fields input, .batch-file-fields select { padding: 6px 8px; font-size: 13px; }
+    .batch-file-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .batch-file-status { font-size: 12px; min-width: 80px; text-align: center; }
+    .batch-file-status.pending { color: #999; }
+    .batch-file-status.uploading { color: #1890ff; }
+    .batch-file-status.success { color: #52c41a; }
+    .batch-file-status.failed { color: #ff4d4f; }
+    .batch-remove-btn {
+      background: #fff1f0; color: #ff4d4f; border: 1px solid #ffccc7;
+      width: 28px; height: 28px; padding: 0; border-radius: 50%; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .batch-remove-btn:hover { background: #ff4d4f; color: white; }
+    .batch-retry-btn { background: #fff7e6; color: #fa8c16; border: 1px solid #ffd591; padding: 4px 10px; font-size: 12px; }
+    .batch-retry-btn:hover { background: #fa8c16; color: white; }
+    .batch-progress-section {
+      background: white; border-radius: 8px; padding: 16px; margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08); display: none;
+    }
+    .batch-progress-section.show { display: block; }
+    .batch-progress-bar-container {
+      width: 100%; height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden; margin: 10px 0;
+    }
+    .batch-progress-bar {
+      height: 100%; background: linear-gradient(90deg, #07c160, #52c41a); border-radius: 4px;
+      transition: width 0.3s ease; width: 0%;
+    }
+    .batch-progress-text { font-size: 13px; color: #666; display: flex; justify-content: space-between; }
+    .batch-summary {
+      background: white; border-radius: 8px; padding: 16px; margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08); display: none; text-align: center;
+    }
+    .batch-summary.show { display: block; }
+    .batch-summary-success { color: #52c41a; font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+    .batch-summary-failed { color: #ff4d4f; font-size: 14px; }
+    .batch-publish-btn {
+      width: 100%; padding: 14px; font-size: 16px; font-weight: 600;
+      background: linear-gradient(135deg, #07c160 0%, #06ad56 100%); color: white;
+      border-radius: 8px; justify-content: center;
+    }
+    .batch-publish-btn:disabled { opacity: 0.6; }
+    .batch-empty { text-align: center; padding: 60px 20px; color: #999; }
+    .batch-empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .app-footer {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 44px;
+      background: #fff; border-top: 1px solid #e8e8e8;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; color: #999; z-index: 50;
+      box-shadow: 0 -1px 4px rgba(0,0,0,0.04);
+    }
+    .footer-content {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      justify-content: center; padding: 0 16px;
+    }
+    .footer-copyright { color: #999; }
+    .footer-links { display: flex; align-items: center; gap: 8px; }
+    .footer-links a {
+      color: #666; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: #07c160; }
+    .footer-sep { color: #ddd; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <span class="logo-icon">📝</span>
+      <span>md2wechat</span>
+      <span class="theme-tag" id="themeTag">默认主题</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" onclick="openSettings()">⚙️ 设置</button>
+      <button class="btn-primary" onclick="refreshPreview()">👁️ 刷新预览</button>
+      <button class="btn-success" onclick="publishDraft()">🚀 发布草稿</button>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <h3>📄 文章信息</h3>
+        <div class="form-group">
+          <label>标题</label>
+          <input type="text" id="articleTitle" placeholder="留空取Markdown一级标题">
+        </div>
+        <div class="form-group">
+          <label>作者</label>
+          <input type="text" id="articleAuthor" placeholder="作者名称">
+        </div>
+        <div class="form-group">
+          <label>摘要</label>
+          <textarea id="articleDigest" rows="2" placeholder="文章摘要（选填）"></textarea>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <h3>🎨 主题选择</h3>
+        <div class="form-group">
+          <select id="themeSelect" onchange="onThemeChange()"></select>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <h3>📁 文件操作</h3>
+        <div class="form-group">
+          <label>导入 Markdown</label>
+          <div class="file-input-wrapper">
+            <div class="file-input-btn" id="mdFileBtn">📎 点击选择 .md 文件</div>
+            <input type="file" accept=".md,.markdown,.txt" onchange="onMdFileSelect(event)">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>封面图片</label>
+          <div class="file-input-wrapper">
+            <div class="file-input-btn" id="coverBtn">🖼️ 点击选择封面图</div>
+            <input type="file" accept="image/*" onchange="onCoverSelect(event)">
+          </div>
+          <img class="cover-preview" id="coverPreview">
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <h3>ℹ️ 状态</h3>
+        <div style="font-size:13px;color:#666;line-height:1.8;">
+          <div id="statusConfig">配置状态：检查中...</div>
+          <div id="statusImages">图片数：0</div>
+          <div id="statusWords">字数：0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="editor-preview">
+      <div class="tabs">
+        <div class="tab active" data-tab="editor" onclick="switchTab('editor')">✏️ 编辑</div>
+        <div class="tab" data-tab="preview" onclick="switchTab('preview')">👁️ 预览</div>
+        <div class="tab" data-tab="split" onclick="switchTab('split')">📑 分屏</div>
+        <div class="tab" data-tab="batch" onclick="switchTab('batch')">📦 批量发布</div>
+      </div>
+      <div class="tab-content active" id="editor-pane">
+        <textarea id="editor" placeholder="在这里输入 Markdown..." oninput="onEditorInput()"></textarea>
+      </div>
+      <div class="tab-content" id="preview-pane">
+        <div class="preview-container">
+          <article class="wechat-article" id="previewContent">
+            <p style="color:#999;text-align:center;padding:60px 0;">编辑内容后预览将在这里显示</p>
+          </article>
+        </div>
+      </div>
+      <div class="tab-content" id="split-pane">
+        <div><textarea id="editor2" placeholder="Markdown 编辑区..." oninput="onEditorInput()"></textarea></div>
+        <div><div class="preview-container"><article class="wechat-article" id="previewContent2"><p style="color:#999;text-align:center;padding:60px 0;">预览区</p></article></div></div>
+      </div>
+      <div class="tab-content" id="batch-pane">
+        <div class="batch-toolbar">
+          <div class="batch-toolbar-row">
+            <div class="file-input-wrapper" style="width:auto;">
+              <button class="btn-ghost" style="position:relative;overflow:hidden;">
+                📂 选择目录
+                <input type="file" webkitdirectory multiple accept=".md,.markdown,.txt" onchange="onBatchDirSelect(event)" style="position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;">
+              </button>
+            </div>
+            <div class="file-input-wrapper" style="width:auto;">
+              <button class="btn-ghost" style="position:relative;overflow:hidden;">
+                📄 选择文件
+                <input type="file" multiple accept=".md,.markdown,.txt" onchange="onBatchFilesSelect(event)" style="position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;">
+              </button>
+            </div>
+            <button class="btn-ghost" onclick="clearBatchList()">🗑️ 清空列表</button>
+            <div class="batch-default-cover">
+              <img src="/api/default-cover" alt="默认封面">
+              <span>默认封面</span>
+            </div>
+          </div>
+          <div class="batch-toolbar-row">
+            <div class="batch-global-settings">
+              <div class="form-group">
+                <label>默认作者</label>
+                <input type="text" id="batchGlobalAuthor" placeholder="全局默认作者">
+              </div>
+              <div class="form-group">
+                <label>默认主题</label>
+                <select id="batchGlobalTheme"></select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="batch-progress-section" id="batchProgressSection">
+          <div class="batch-progress-text">
+            <span id="batchProgressLabel">准备中...</span>
+            <span id="batchProgressCount">0/0</span>
+          </div>
+          <div class="batch-progress-bar-container">
+            <div class="batch-progress-bar" id="batchProgressBar"></div>
+          </div>
+        </div>
+        <div class="batch-summary" id="batchSummary">
+          <div class="batch-summary-success" id="batchSummarySuccess"></div>
+          <div class="batch-summary-failed" id="batchSummaryFailed"></div>
+        </div>
+        <div class="batch-file-list" id="batchFileList">
+          <div class="batch-empty" id="batchEmptyHint">
+            <div class="batch-empty-icon">📦</div>
+            <div>请选择目录或文件开始批量发布</div>
+          </div>
+        </div>
+        <button class="batch-publish-btn" id="batchPublishBtn" onclick="startBatchPublish()" style="display:none;">🚀 开始批量发布</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span>⚙️ 微信公众号配置</span>
+        <button class="modal-close" onclick="closeSettings()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>AppID</label>
+          <input type="text" id="cfgAppId" placeholder="wx...">
+        </div>
+        <div class="form-group">
+          <label>AppSecret</label>
+          <input type="password" id="cfgAppSecret" placeholder="填写后保存到本地">
+        </div>
+        <div style="font-size:12px;color:#999;margin-top:8px;line-height:1.6;">
+          💡 获取方式：登录微信公众平台 → 开发 → 基本配置<br>
+          ⚠️ 需将服务器IP添加到IP白名单
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" onclick="closeSettings()">取消</button>
+        <button class="btn-success" onclick="saveSettings()">保存配置</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading-overlay" id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loadingText">处理中...</div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <footer class="app-footer">
+    <div class="footer-content">
+      <span class="footer-copyright">© 2026 md2wechat · Made with ❤️ by 无敌宝宝sp</span>
+      <span class="footer-links">
+        <a href="https://github.com/your-username/md2wechat" target="_blank" rel="noopener" id="footerGithub" title="GitHub 仓库">
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+        <span class="footer-sep">·</span>
+        <a href="mailto:your-email@example.com" id="footerEmail" title="联系作者">📧 联系作者</a>
+        <span class="footer-sep">·</span>
+        <a href="/api/default-cover" target="_blank" id="footerCover" title="查看默认封面">🖼️ 默认封面</a>
+      </span>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>
+    var currentThemes = [];
+    var coverFile = null;
+    var previewTimer = null;
+    var currentTab = 'editor';
+    var defaultMd = `---
+title: md2wechat - 让 Markdown 优雅发布到公众号
+author: 无敌宝宝sp
+digest: 一个开源的 Markdown 转微信公众号工具，支持实时预览、11 套主题、批量发布
+theme: default
+---
+
+# 📝 md2wechat：让 Markdown 优雅发布到公众号
+
+> 还在为公众号排版头疼？复制粘贴格式乱、代码块手机端不换行、图片一张张手动传？md2wechat 帮你一键搞定！
+
+你好，我是 **无敌宝宝sp**，欢迎使用我开发的 md2wechat 🎉
+
+## ✨ 核心功能
+
+md2wechat 是一个开源的 Markdown 转微信公众号工具，帮你把精力留给写作本身，而不是排版。
+
+- 🎨 **11 套精美主题** — 默认绿、优雅红、科技蓝、金融时报、纽约时报、GitHub、Claude、学术论文、激光玻璃、轻奢金、赛博朋克
+- 💻 **可视化 Web 界面** — 在线编辑 Markdown，实时预览，所见即所得
+- 📦 **批量发布** — 选择目录或多选文件，每篇独立设置封面，进度条展示，失败可重试
+- 🖼️ **图片自动上传** — 正文本地图片自动上传到微信素材库，无需手动操作
+- 📱 **手机端完美适配** — 代码块自动换行、列表无多余圆点、暗色主题不白边
+- 🚀 **一键发布草稿箱** — 转换 + 上传图片 + 封面 + 创建草稿，一步到位
+- 🔧 **命令行工具** — 支持脚本和 CI/CD 集成
+- 🔒 **本地安全** — AppID/AppSecret 仅保存在本地，不上传任何第三方服务器
+
+## 🚀 快速开始
+
+### 方式一：可视化界面（推荐）
+
+点击右上角的 **🚀 发布草稿** 按钮前，记得：
+
+1. 在左侧填写文章**标题、作者、摘要**（留空会取 Markdown 一级标题）
+2. 在 **🎨 主题选择** 下拉框选一个喜欢的主题
+3. 在 **📁 文件操作** 选择封面图（不选则使用默认封面）
+4. 切换到 **👁️ 预览** 查看效果
+5. 点击右上角 **🚀 发布草稿** 即可！
+
+### 方式二：批量发布多篇
+
+切换到 **📦 批量发布** 标签页：
+
+- 点击 **📂 选择目录** 批量导入整个文件夹的 Markdown
+- 或点击 **📄 选择文件** 手动多选
+- 每篇文章可以单独设置标题、作者、主题、封面
+- 点击 **🚀 开始批量发布**，进度条实时显示，失败可单独重试
+
+### 方式三：命令行
+
+\`\`\`bash
+# 转换并预览
+md2wechat convert article.md --preview
+
+# 一键发布到草稿箱
+md2wechat convert article.md --draft -t github -c ./cover.jpg
+
+# 启动 Web 界面
+md2wechat web
+\`\`\`
+
+## 💻 代码示例
+
+发布一篇技术文章，代码块在手机上也能完美显示：
+
+\`\`\`javascript
+// 网站托管 → Vercel / Netlify / GitHub Pages（免费）
+// 数据库    → Supabase / Neon / PlanetScale（免费额度）
+// CDN       → Cloudflare（免费）
+function deployStack() {
+  const free = [
+    'Vercel', 'Netlify', 'GitHub Pages',
+    'Supabase', 'Neon', 'PlanetScale',
+    'Cloudflare', 'Resend', 'Brevo',
+    'Sentry', 'GitHub Actions', 'Better Stack'
+  ];
+  return free.map(s => \`✅ \${s}\`).join('\\n');
+}
+\`\`\`
+
+## 📋 快捷键 & 小技巧
+
+| 操作 | 说明 |
+|------|------|
+| 实时预览 | 编辑时自动 600ms 防抖刷新 |
+| 分屏模式 | 左边写 Markdown 右边实时看效果 |
+| 主题切换 | 下拉框即时切换，无需重新加载 |
+| 封面图片 | 留空会使用项目默认封面 |
+| Front Matter | 在文件头用 \`---\` 包裹元信息 |
+
+## 🎨 主题一览
+
+- 🌿 **默认绿** — 微信品牌绿，清新百搭
+- 🔴 **优雅红** — 情感观点类首选
+- 🔵 **科技蓝** — 技术文章标配
+- 📰 **金融时报** — FT 品红色衬线体，财经评论风
+- 🗞️ **纽约时报** — 经典黑色衬线，严肃新闻风
+- 🐙 **GitHub** — 代码阅读最舒适
+- 🤖 **Claude** — 暖米色赤陶色，AI 文章风
+- 📚 **学术论文** — 宋体首行缩进，论文笔记必备
+- 💎 **激光玻璃** — 青紫粉渐变，设计感十足
+- ✨ **轻奢金** — 金色装饰线，古典奢华
+- 🌃 **赛博朋克** — 霓虹配色，极客游戏风
+
+> 💡 **提示**：首次使用请点击右上角 ⚙️ **设置** 按钮，配置微信公众号的 AppID 和 AppSecret，并将服务器 IP 加入白名单。
+
+## 🔗 相关链接
+
+- **GitHub 仓库**：配置后可在底部点击访问
+- **使用文档**：参见项目 docs/guide.md
+- **开源协议**：MIT License，自由使用修改分发
+
+---
+
+*写作是最好的思考方式。愿你用 md2wechat，省下排版的时间，去写更重要的东西。*
+`;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      loadThemes();
+      loadConfig();
+      document.getElementById('editor').value = defaultMd;
+      document.getElementById('editor2').value = defaultMd;
+      refreshPreview();
+      updateStatus();
+    });
+
+    function loadThemes() {
+      fetch('/api/themes').then(function(r) { return r.json(); }).then(function(data) {
+        if (data.success) {
+          currentThemes = data.data;
+          var sel = document.getElementById('themeSelect');
+          var batchSel = document.getElementById('batchGlobalTheme');
+          var options = data.data.map(function(t) {
+            return '<option value="' + t.id + '">' + t.name + '</option>';
+          }).join('');
+          sel.innerHTML = options;
+          batchSel.innerHTML = options;
+        }
+      });
+    }
+
+    function loadConfig() {
+      fetch('/api/config').then(function(r) { return r.json(); }).then(function(data) {
+        if (data.success) {
+          document.getElementById('cfgAppId').value = data.data.appId || '';
+          document.getElementById('cfgAppSecret').value = data.data.hasSecret ? '********' : '';
+          if (data.data.theme) {
+            document.getElementById('themeSelect').value = data.data.theme;
+            document.getElementById('batchGlobalTheme').value = data.data.theme;
+            updateThemeTag();
+          }
+          updateConfigStatus(data.data.appId && data.data.hasSecret);
+        }
+      });
+    }
+
+    function updateConfigStatus(ok) {
+      document.getElementById('statusConfig').innerHTML = ok
+        ? '配置状态：<span style="color:#07c160;">✓ 已配置</span>'
+        : '配置状态：<span style="color:#ff4d4f;">✗ 未配置</span>';
+    }
+
+    function onThemeChange() { updateThemeTag(); refreshPreview(); }
+    function updateThemeTag() {
+      var sel = document.getElementById('themeSelect');
+      var t = currentThemes.find(function(x) { return x.id === sel.value; });
+      document.getElementById('themeTag').textContent = t ? t.name : '默认主题';
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach(function(el) {
+        el.classList.toggle('active', el.dataset.tab === tab);
+      });
+      document.getElementById('editor-pane').style.display = tab === 'editor' ? 'flex' : 'none';
+      document.getElementById('preview-pane').style.display = tab === 'preview' ? 'flex' : 'none';
+      document.getElementById('split-pane').style.display = tab === 'split' ? 'flex' : 'none';
+      document.getElementById('batch-pane').style.display = tab === 'batch' ? 'flex' : 'none';
+      if (tab === 'split') {
+        document.getElementById('editor2').value = document.getElementById('editor').value;
+        refreshPreview();
+      }
+    }
+
+    function getEditorValue() {
+      return currentTab === 'split' ? document.getElementById('editor2').value : document.getElementById('editor').value;
+    }
+
+    function onEditorInput() {
+      if (currentTab === 'split') {
+        var e1 = document.getElementById('editor'), e2 = document.getElementById('editor2');
+        if (document.activeElement === e2) e1.value = e2.value; else e2.value = e1.value;
+      }
+      updateStatus();
+      clearTimeout(previewTimer);
+      previewTimer = setTimeout(refreshPreview, 600);
+    }
+
+    function updateStatus() {
+      var md = getEditorValue();
+      document.getElementById('statusWords').textContent = '字数：' + md.replace(/[#*`>\-\n\s]/g, '').length;
+      document.getElementById('statusImages').textContent = '图片数：' + ((md.match(/!\[.*?\]\(.*?\)/g) || []).length);
+    }
+
+    function refreshPreview() {
+      var markdown = getEditorValue();
+      var theme = document.getElementById('themeSelect').value;
+      fetch('/api/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markdown: markdown, theme: theme })
+      }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.success) {
+          document.getElementById('previewContent').innerHTML = data.data.html;
+          document.getElementById('previewContent2').innerHTML = data.data.html;
+        }
+      }).catch(function() {});
+    }
+
+    function onMdFileSelect(event) {
+      var file = event.target.files[0];
+      if (!file) return;
+      document.getElementById('mdFileBtn').textContent = '📎 ' + file.name;
+      document.getElementById('mdFileBtn').classList.add('has-file');
+      var fd = new FormData();
+      fd.append('file', file);
+      showLoading('读取文件中...');
+      fetch('/api/upload/markdown', { method: 'POST', body: fd })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          hideLoading();
+          if (data.success) {
+            document.getElementById('editor').value = data.data.content;
+            document.getElementById('editor2').value = data.data.content;
+            if (data.data.meta.title) document.getElementById('articleTitle').value = data.data.meta.title;
+            if (data.data.meta.author) document.getElementById('articleAuthor').value = data.data.meta.author;
+            if (data.data.meta.digest) document.getElementById('articleDigest').value = data.data.meta.digest;
+            if (data.data.meta.theme) {
+              document.getElementById('themeSelect').value = data.data.meta.theme;
+              updateThemeTag();
+            }
+            refreshPreview();
+            showToast('文件导入成功！', 'success');
+          } else { showToast(data.error || '导入失败', 'error'); }
+        }).catch(function(e) { hideLoading(); showToast(e.message, 'error'); });
+      event.target.value = '';
+    }
+
+    function onCoverSelect(event) {
+      var file = event.target.files[0];
+      if (!file) return;
+      coverFile = file;
+      document.getElementById('coverBtn').textContent = '🖼️ ' + file.name;
+      document.getElementById('coverBtn').classList.add('has-file');
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var img = document.getElementById('coverPreview');
+        img.src = e.target.result;
+        img.classList.add('show');
+      };
+      reader.readAsDataURL(file);
+      event.target.value = '';
+    }
+
+    function openSettings() { document.getElementById('settingsModal').classList.add('show'); }
+    function closeSettings() { document.getElementById('settingsModal').classList.remove('show'); }
+
+    function saveSettings() {
+      var appId = document.getElementById('cfgAppId').value.trim();
+      var appSecret = document.getElementById('cfgAppSecret').value.trim();
+      showLoading('保存配置中...');
+      fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appId: appId, appSecret: appSecret })
+      }).then(function(r) { return r.json(); }).then(function(data) {
+        hideLoading();
+        if (data.success) {
+          closeSettings();
+          loadConfig();
+          showToast('配置已保存！', 'success');
+        } else { showToast(data.error || '保存失败', 'error'); }
+      }).catch(function(e) { hideLoading(); showToast(e.message, 'error'); });
+    }
+
+    function publishDraft() {
+      var markdown = getEditorValue();
+      if (!markdown.trim()) { showToast('请先输入 Markdown 内容', 'error'); return; }
+      var fd = new FormData();
+      fd.append('markdown', markdown);
+      fd.append('theme', document.getElementById('themeSelect').value);
+      fd.append('title', document.getElementById('articleTitle').value);
+      fd.append('author', document.getElementById('articleAuthor').value);
+      fd.append('digest', document.getElementById('articleDigest').value);
+      if (coverFile) fd.append('cover', coverFile);
+      showLoading('正在发布到草稿箱...');
+      fetch('/api/publish', { method: 'POST', body: fd })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          hideLoading();
+          if (data.success) {
+            showToast('🎉 草稿发布成功！请登录微信公众平台查看', 'success');
+          } else { showToast('发布失败：' + (data.error || '未知错误'), 'error'); }
+        }).catch(function(e) { hideLoading(); showToast(e.message, 'error'); });
+    }
+
+    function showLoading(t) {
+      document.getElementById('loadingText').textContent = t || '处理中...';
+      document.getElementById('loading').classList.add('show');
+    }
+    function hideLoading() { document.getElementById('loading').classList.remove('show'); }
+    function showToast(msg, type) {
+      var t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show ' + (type || '');
+      setTimeout(function() { t.classList.remove('show'); }, 3000);
+    }
+
+    document.getElementById('settingsModal').addEventListener('click', function(e) {
+      if (e.target.id === 'settingsModal') closeSettings();
+    });
+
+    var batchFiles = [];
+    var batchIdCounter = 0;
+    var isBatchPublishing = false;
+
+    function parseFrontMatter(content) {
+      var meta = {};
+      var match = content.match(/^---\n([\s\S]*?)\n---/);
+      if (match) {
+        var lines = match[1].split('\n');
+        lines.forEach(function(line) {
+          var colonIdx = line.indexOf(':');
+          if (colonIdx > 0) {
+            var key = line.substring(0, colonIdx).trim();
+            var value = line.substring(colonIdx + 1).trim();
+            if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
+            if (value.startsWith("'") && value.endsWith("'")) value = value.slice(1, -1);
+            meta[key] = value;
+          }
+        });
+        meta.content = content.substring(match[0].length).trim();
+      } else {
+        meta.content = content;
+      }
+      return meta;
+    }
+
+    function filterMdFiles(files) {
+      var validExts = ['.md', '.markdown', '.txt'];
+      return Array.from(files).filter(function(f) {
+        var name = f.name.toLowerCase();
+        return validExts.some(function(ext) { return name.endsWith(ext); });
+      });
+    }
+
+    function addBatchFiles(files) {
+      var mdFiles = filterMdFiles(files);
+      if (mdFiles.length === 0) {
+        showToast('未找到 Markdown 文件', 'error');
+        return;
+      }
+      var globalAuthor = document.getElementById('batchGlobalAuthor').value;
+      var globalTheme = document.getElementById('batchGlobalTheme').value;
+      mdFiles.forEach(function(file) {
+        var id = 'batch-' + (++batchIdCounter);
+        var item = {
+          id: id,
+          file: file,
+          title: file.name.replace(/\.(md|markdown|txt)$/i, ''),
+          author: globalAuthor,
+          theme: globalTheme,
+          digest: '',
+          content: '',
+          coverFile: null,
+          coverPreview: '/api/default-cover',
+          status: 'pending',
+          error: ''
+        };
+        batchFiles.push(item);
+        var reader = new FileReader();
+        reader.onload = (function(item) {
+          return function(e) {
+            var text = e.target.result;
+            var meta = parseFrontMatter(text);
+            item.content = meta.content || text;
+            if (meta.title) item.title = meta.title;
+            if (meta.author) item.author = meta.author;
+            if (meta.digest) item.digest = meta.digest;
+            if (meta.theme) {
+              var themeExists = currentThemes.some(function(t) { return t.id === meta.theme; });
+              if (themeExists) item.theme = meta.theme;
+            }
+            renderBatchFileList();
+          };
+        })(item);
+        reader.readAsText(file);
+      });
+      renderBatchFileList();
+      updateBatchUI();
+    }
+
+    function onBatchDirSelect(event) {
+      addBatchFiles(event.target.files);
+      event.target.value = '';
+    }
+
+    function onBatchFilesSelect(event) {
+      addBatchFiles(event.target.files);
+      event.target.value = '';
+    }
+
+    function clearBatchList() {
+      if (isBatchPublishing) {
+        showToast('正在发布中，无法清空列表', 'error');
+        return;
+      }
+      batchFiles = [];
+      renderBatchFileList();
+      updateBatchUI();
+      hideBatchProgress();
+      hideBatchSummary();
+    }
+
+    function removeBatchFile(id) {
+      if (isBatchPublishing) return;
+      batchFiles = batchFiles.filter(function(f) { return f.id !== id; });
+      renderBatchFileList();
+      updateBatchUI();
+    }
+
+    function onBatchItemCoverSelect(event, id) {
+      var file = event.target.files[0];
+      if (!file) return;
+      var item = batchFiles.find(function(f) { return f.id === id; });
+      if (!item) return;
+      item.coverFile = file;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        item.coverPreview = e.target.result;
+        renderBatchFileList();
+      };
+      reader.readAsDataURL(file);
+      event.target.value = '';
+    }
+
+    function updateBatchItemField(id, field, value) {
+      var item = batchFiles.find(function(f) { return f.id === id; });
+      if (item) item[field] = value;
+    }
+
+    function renderBatchFileList() {
+      var listEl = document.getElementById('batchFileList');
+      var emptyHint = document.getElementById('batchEmptyHint');
+      if (batchFiles.length === 0) {
+        listEl.innerHTML = '';
+        listEl.appendChild(emptyHint);
+        return;
+      }
+      var globalAuthor = document.getElementById('batchGlobalAuthor').value;
+      var globalTheme = document.getElementById('batchGlobalTheme').value;
+      var html = '';
+      batchFiles.forEach(function(item) {
+        var themeOptions = currentThemes.map(function(t) {
+          return '<option value="' + t.id + '"' + (t.id === item.theme ? ' selected' : '') + '>' + t.name + '</option>';
+        }).join('');
+        var statusText = '';
+        var statusClass = 'pending';
+        var retryBtn = '';
+        switch (item.status) {
+          case 'pending':
+            statusText = '⏳ 等待中';
+            statusClass = 'pending';
+            break;
+          case 'uploading':
+            statusText = '📤 上传中...';
+            statusClass = 'uploading';
+            break;
+          case 'success':
+            statusText = '✅ 成功';
+            statusClass = 'success';
+            break;
+          case 'failed':
+            statusText = '❌ 失败';
+            statusClass = 'failed';
+            retryBtn = '<button class="batch-retry-btn" onclick="retryBatchItem(\'' + item.id + '\')">🔄 重试</button>';
+            break;
+        }
+        var errorMsg = item.error ? '<div style="font-size:11px;color:#ff4d4f;margin-top:4px;">' + item.error + '</div>' : '';
+        html += '<div class="batch-file-card" data-id="' + item.id + '">' +
+          '<label style="cursor:pointer;position:relative;">' +
+            '<img class="batch-file-cover" src="' + item.coverPreview + '" alt="封面">' +
+            '<input type="file" accept="image/*" onchange="onBatchItemCoverSelect(event,\'' + item.id + '\')" style="position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;">' +
+          '</label>' +
+          '<div class="batch-file-info">' +
+            '<div class="batch-file-name">' + item.file.name + '</div>' +
+            '<div class="batch-file-fields">' +
+              '<div class="form-group">' +
+                '<label>标题</label>' +
+                '<input type="text" value="' + (item.title || '').replace(/"/g, '&quot;') + '" onchange="updateBatchItemField(\'' + item.id + '\',\'title\',this.value)"' + (isBatchPublishing ? ' disabled' : '') + '>' +
+              '</div>' +
+              '<div class="form-group">' +
+                '<label>作者</label>' +
+                '<input type="text" value="' + (item.author || '').replace(/"/g, '&quot;') + '" placeholder="' + globalAuthor + '" onchange="updateBatchItemField(\'' + item.id + '\',\'author\',this.value)"' + (isBatchPublishing ? ' disabled' : '') + '>' +
+              '</div>' +
+              '<div class="form-group">' +
+                '<label>主题</label>' +
+                '<select onchange="updateBatchItemField(\'' + item.id + '\',\'theme\',this.value)"' + (isBatchPublishing ? ' disabled' : '') + '>' + themeOptions + '</select>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="batch-file-actions">' +
+            '<div>' +
+              '<div class="batch-file-status ' + statusClass + '">' + statusText + '</div>' +
+              errorMsg +
+              retryBtn +
+            '</div>' +
+            '<button class="batch-remove-btn" onclick="removeBatchFile(\'' + item.id + '\')" title="移除"' + (isBatchPublishing ? ' disabled' : '') + '>×</button>' +
+          '</div>' +
+        '</div>';
+      });
+      listEl.innerHTML = html;
+    }
+
+    function updateBatchUI() {
+      var btn = document.getElementById('batchPublishBtn');
+      btn.style.display = batchFiles.length > 0 && !isBatchPublishing ? 'flex' : 'none';
+    }
+
+    function showBatchProgress() {
+      document.getElementById('batchProgressSection').classList.add('show');
+    }
+
+    function hideBatchProgress() {
+      document.getElementById('batchProgressSection').classList.remove('show');
+    }
+
+    function updateBatchProgress(completed, total, label) {
+      document.getElementById('batchProgressLabel').textContent = label || '发布中...';
+      document.getElementById('batchProgressCount').textContent = completed + '/' + total;
+      document.getElementById('batchProgressBar').style.width = total > 0 ? (completed / total * 100) + '%' : '0%';
+    }
+
+    function showBatchSummary(successCount, failedCount) {
+      var el = document.getElementById('batchSummary');
+      el.classList.add('show');
+      document.getElementById('batchSummarySuccess').textContent = '🎉 成功发布 ' + successCount + ' 篇';
+      if (failedCount > 0) {
+        document.getElementById('batchSummaryFailed').textContent = '⚠️ ' + failedCount + ' 篇失败，可点击重试';
+        document.getElementById('batchSummaryFailed').style.display = 'block';
+      } else {
+        document.getElementById('batchSummaryFailed').style.display = 'none';
+      }
+    }
+
+    function hideBatchSummary() {
+      document.getElementById('batchSummary').classList.remove('show');
+    }
+
+    function publishSingleBatchItem(item) {
+      return new Promise(function(resolve) {
+        item.status = 'uploading';
+        item.error = '';
+        renderBatchFileList();
+        var fd = new FormData();
+        fd.append('markdown', item.content);
+        fd.append('theme', item.theme || document.getElementById('batchGlobalTheme').value);
+        fd.append('title', item.title || '');
+        fd.append('author', item.author || document.getElementById('batchGlobalAuthor').value || '');
+        fd.append('digest', item.digest || '');
+        if (item.coverFile) {
+          fd.append('cover', item.coverFile);
+        }
+        fetch('/api/publish', { method: 'POST', body: fd })
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.success) {
+              item.status = 'success';
+            } else {
+              item.status = 'failed';
+              item.error = data.error || '未知错误';
+            }
+            resolve(item.status === 'success');
+          })
+          .catch(function(e) {
+            item.status = 'failed';
+            item.error = e.message || '网络错误';
+            resolve(false);
+          });
+      });
+    }
+
+    async function startBatchPublish() {
+      if (isBatchPublishing) return;
+      var pendingItems = batchFiles.filter(function(f) { return f.status === 'pending' || f.status === 'failed'; });
+      if (pendingItems.length === 0) {
+        showToast('没有待发布的文件', 'error');
+        return;
+      }
+      if (!pendingItems.some(function(f) { return f.coverFile; })) {
+        showToast('所有文件将使用默认封面发布', 'success');
+      }
+      isBatchPublishing = true;
+      hideBatchSummary();
+      showBatchProgress();
+      updateBatchUI();
+      var total = pendingItems.length;
+      var completed = 0;
+      var successCount = batchFiles.filter(function(f) { return f.status === 'success'; }).length;
+      var failedCount = 0;
+      for (var i = 0; i < pendingItems.length; i++) {
+        var item = pendingItems[i];
+        updateBatchProgress(completed, total, '正在发布：' + item.title);
+        var ok = await publishSingleBatchItem(item);
+        completed++;
+        if (ok) successCount++; else failedCount++;
+        updateBatchProgress(completed, total, '发布中...');
+        renderBatchFileList();
+      }
+      isBatchPublishing = false;
+      updateBatchProgress(total, total, '发布完成');
+      var totalFailed = batchFiles.filter(function(f) { return f.status === 'failed'; }).length;
+      var totalSuccess = batchFiles.filter(function(f) { return f.status === 'success'; }).length;
+      showBatchSummary(totalSuccess, totalFailed);
+      updateBatchUI();
+      showToast('批量发布完成：成功' + totalSuccess + '篇，失败' + totalFailed + '篇', totalFailed > 0 ? 'error' : 'success');
+    }
+
+    async function retryBatchItem(id) {
+      if (isBatchPublishing) return;
+      var item = batchFiles.find(function(f) { return f.id === id; });
+      if (!item || item.status !== 'failed') return;
+      isBatchPublishing = true;
+      item.status = 'pending';
+      item.error = '';
+      hideBatchSummary();
+      updateBatchUI();
+      renderBatchFileList();
+      updateBatchProgress(0, 1, '正在重试：' + item.title);
+      showBatchProgress();
+      var ok = await publishSingleBatchItem(item);
+      isBatchPublishing = false;
+      updateBatchProgress(1, 1, ok ? '重试成功' : '重试失败');
+      var totalFailed = batchFiles.filter(function(f) { return f.status === 'failed'; }).length;
+      var totalSuccess = batchFiles.filter(function(f) { return f.status === 'success'; }).length;
+      if (totalFailed > 0) {
+        showBatchSummary(totalSuccess, totalFailed);
+      } else {
+        showBatchSummary(totalSuccess, 0);
+      }
+      updateBatchUI();
+      renderBatchFileList();
+      showToast(ok ? '重试成功！' : '重试失败：' + (item.error || '未知错误'), ok ? 'success' : 'error');
+    }
+
+    document.getElementById('batchGlobalAuthor').addEventListener('input', function() {
+      var author = this.value;
+      batchFiles.forEach(function(item) {
+        if (!item.author || item.author === '') {
+          item.author = author;
+        }
+      });
+      renderBatchFileList();
+    });
+
+    document.getElementById('batchGlobalTheme').addEventListener('change', function() {
+      var theme = this.value;
+      batchFiles.forEach(function(item) {
+        item.theme = theme;
+      });
+      renderBatchFileList();
+    });
+  </script>
+</body>
+</html>
