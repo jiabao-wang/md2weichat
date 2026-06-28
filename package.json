@@ -23,12 +23,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jiabao-wang/md2weichat.git"
+    "url": "https://github.com/jiabao-wang/md2wechat-free.git"
   },
   "bugs": {
-    "url": "https://github.com/jiabao-wang/md2weichat/issues"
+    "url": "https://github.com/jiabao-wang/md2wechat-free/issues"
   },
-  "homepage": "https://github.com/jiabao-wang/md2weichat#readme",
+  "homepage": "https://github.com/jiabao-wang/md2wechat-free#readme",
   "type": "commonjs",
   "dependencies": {
     "@types/cors": "^2.8.19",

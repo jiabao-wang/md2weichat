@@ -12,7 +12,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-16+-43853D?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![微信公众号](https://img.shields.io/badge/平台-微信公众号-07c160?logo=wechat&logoColor=white)](https://mp.weixin.qq.com/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/jiabao-wang/md2weichat/pulls)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/jiabao-wang/md2wechat-free/pulls)
 
 **不用再为公众号排版掉头发了 —— 本地写完 Markdown，一键发送到草稿箱，拿起手机群发即可。**
 
@@ -52,8 +52,8 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/jiabao-wang/md2weichat.git
-cd md2wechat
+git clone https://github.com/jiabao-wang/md2wechat-free.git
+cd md2wechat-free
 
 # 安装依赖
 npm install

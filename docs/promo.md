@@ -91,8 +91,8 @@ theme: tech
 ### 第一步：安装
 
 ```bash
-git clone https://github.com/jiabao-wang/md2weichat.git
-cd md2wechat
+git clone https://github.com/jiabao-wang/md2wechat-free.git
+cd md2wechat-free
 npm install
 npm run build
 ```
@@ -147,7 +147,7 @@ md2wechat convert my-article.md --draft --cover ./cover.jpg -t github
 
 ## 项目地址
 
-**GitHub**：https://github.com/jiabao-wang/md2weichat
+**GitHub**：https://github.com/jiabao-wang/md2wechat-free
 
 欢迎 Star ⭐、提 Issue、PR 新主题！如果你用它发布了文章，也欢迎在评论区分享效果。
 
